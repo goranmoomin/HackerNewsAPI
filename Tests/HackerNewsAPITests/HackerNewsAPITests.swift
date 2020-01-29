@@ -1,4 +1,5 @@
 import XCTest
+import PromiseKit
 @testable import HackerNewsAPI
 
 final class HackerNewsAPITests: XCTestCase {
@@ -6,10 +7,13 @@ final class HackerNewsAPITests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(HackerNewsAPI().text, "Hello, World!")
+        do {
+            let text = try hang(HackerNewsAPI.example())
+            XCTAssertEqual(text, "HTTPBIN is awesome")
+        } catch {
+            XCTFail("Error \(error) thrown.")
+        }
     }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    static var allTests: [(String, (HackerNewsAPITests) -> () -> ())] = []
 }
