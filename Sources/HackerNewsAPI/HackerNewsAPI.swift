@@ -49,8 +49,8 @@ struct HackerNewsAPI {
             urlSession.dataTask(.promise, with: hnURL).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
-        }.map { (data, response) ->
-            (title: String, score: Int, author: String, url: URL?, text: String?) in
+        }.then { (data, response) ->
+            Promise<(title: String, score: Int, author: User, url: URL?, text: String?)> in
             let html = String(data: data, urlResponse: response)!
             let document = try perform(SwiftSoup.parse(html)) { error in
                 APIError.parsingFailed(error)
@@ -74,7 +74,7 @@ struct HackerNewsAPI {
                                         orThrow: APIError.unknown)
             let score = try unwrap(Int(scoreText), orThrow: APIError.unknown)
             let authorEl = try! subTextEl.select(".hnuser")
-            let author = try perform(authorEl.text(), orThrow: APIError.unknown)
+            let authorName = try perform(authorEl.text(), orThrow: APIError.unknown)
             var url: URL?
             var text: String?
             if rows.count == 2 {
@@ -86,16 +86,19 @@ struct HackerNewsAPI {
                 let textEl = rows[3].child(1)
                 text = try perform(textEl.text(), orThrow: APIError.unknown)
             }
-            return (title, score, author, url, text)
+            let promise = firstly {
+                user(withName: authorName)
+            }.map { author -> (title: String, score: Int, author: User, url: URL?, text: String?) in
+                (title, score, author, url, text)
+            }
+            return promise
         }
         let promise = firstly {
             when(fulfilled: apiPromise, hnPromise)
         }.map { time, storyInfo -> Story in
             let (title, score, author, url, text) = storyInfo
-            return Story(id: id, time: time,
-                         author: User(creation: Date(), description: nil, name: author, karma: 0),
-                         score: score, title: title, url: url, text: text, comments: [],
-                         actions: [])
+            return Story(id: id, time: time, author: author, score: score, title: title, url: url,
+                         text: text, comments: [], actions: [])
         }
         return promise
     }

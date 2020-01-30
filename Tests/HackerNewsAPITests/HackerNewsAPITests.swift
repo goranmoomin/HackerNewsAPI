@@ -8,6 +8,8 @@ final class HackerNewsAPITests: XCTestCase {
         do {
             let story = try hang(HackerNewsAPI.story(withID: 21997622))
             XCTAssertEqual(story.author.name, "pcr910303")
+            XCTAssertEqual(story.author.creation, Date(timeIntervalSince1970: 1553991192))
+            XCTAssertEqual(story.author.description, "pcr910303 <at> icloud <dot> com")
             XCTAssertEqual(story.id, 21997622)
             XCTAssertEqual(story.score, 115)
             XCTAssertEqual(story.text, nil)
