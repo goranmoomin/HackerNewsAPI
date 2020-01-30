@@ -23,34 +23,12 @@ struct HackerNewsAPI {
     // MARK: - Static Methods
 
     static func story(withID id: Int) -> Promise<Story> {
-        let hnURL = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
-        let apiURL = URL(string: "https://hacker-news.firebaseio.com/v0/item/\(id).json")!
-        struct StoryContainer: Decodable {
-            var time: Date
-            var type: String
-        }
-        let apiPromise = firstly {
-            urlSession.dataTask(.promise, with: apiURL).validate()
+        let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
+        let promise = firstly {
+            urlSession.dataTask(.promise, with: url).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
-        }.map { (data, _) -> Date in
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .secondsSince1970
-            let story = try perform(decoder.decode(StoryContainer.self, from: data)) { error in
-                APIError.decodingFailed(error)
-            }
-            guard story.type == "story" else {
-                throw APIError.unknown
-            }
-            let time = story.time
-            return time
-        }
-        let hnPromise = firstly {
-            urlSession.dataTask(.promise, with: hnURL).validate()
-        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
-            throw APIError.networkingFailed(error)
-        }.then { (data, response) ->
-            Promise<(title: String, score: Int, author: User, url: URL?, text: String?)> in
+        }.then { (data, response) -> Promise<Story> in
             let html = String(data: data, urlResponse: response)!
             let document = try perform(SwiftSoup.parse(html)) { error in
                 APIError.parsingFailed(error)
@@ -88,17 +66,11 @@ struct HackerNewsAPI {
             }
             let promise = firstly {
                 user(withName: authorName)
-            }.map { author -> (title: String, score: Int, author: User, url: URL?, text: String?) in
-                (title, score, author, url, text)
+            }.map { author -> Story in
+                Story(id: id, author: author, score: score, title: title, url: url, text: text,
+                      comments: [], actions: [])
             }
             return promise
-        }
-        let promise = firstly {
-            when(fulfilled: apiPromise, hnPromise)
-        }.map { time, storyInfo -> Story in
-            let (title, score, author, url, text) = storyInfo
-            return Story(id: id, time: time, author: author, score: score, title: title, url: url,
-                         text: text, comments: [], actions: [])
         }
         return promise
     }

@@ -14,7 +14,6 @@ final class HackerNewsAPITests: XCTestCase {
             XCTAssertEqual(story.score, 115)
             XCTAssertEqual(story.text, nil)
             XCTAssertEqual(story.url, URL(string: "http://ijzerenhein.github.io/autolayout.js/"))
-            XCTAssertEqual(story.time, Date(timeIntervalSince1970: 1578533115))
             XCTAssertEqual(story.title,
                            "Apple's auto layout and visual format language for JavaScript (2016)")
         } catch {
@@ -29,7 +28,6 @@ final class HackerNewsAPITests: XCTestCase {
             XCTAssertEqual(story.id, 121003)
             XCTAssertEqual(story.score, 25)
             XCTAssert(story.text?.hasPrefix("or HN: the Next Iteration") ?? false)
-            XCTAssertEqual(story.time, Date(timeIntervalSince1970: 1203647620))
             XCTAssertEqual(story.title, "Ask HN: The Arc Effect")
         } catch {
             XCTFail("Error \(error) thrown.")
