@@ -64,11 +64,59 @@ struct HackerNewsAPI {
                 let textEl = rows[3].child(1)
                 text = try perform(textEl.text(), orThrow: APIError.unknown)
             }
+            let commentEls = try! document.select(".comtr").array()
+            var commentsPerLevel: [[Comment]] = [[]]
+            for commentEl in commentEls {
+                let currentLevel = commentsPerLevel.count - 1
+                let indentEl = try unwrap(try! commentEl.select(".ind > img").first(),
+                                          orThrow: APIError.unknown)
+                let indentWidth = try perform(indentEl.attr("width"), orThrow: APIError.unknown)
+                let level = try unwrap(Int(indentWidth), orThrow: APIError.unknown) / 40
+                guard level <= currentLevel + 1 else {
+                    throw APIError.unknown
+                }
+                let id = try unwrap(Int(commentEl.id()), orThrow: APIError.unknown)
+                let authorEl = try unwrap(try! commentEl.select(".hnuser").first(),
+                                          orThrow: APIError.unknown)
+                let authorName = try perform(authorEl.text(), orThrow: APIError.unknown)
+                let text = try perform(commentEl.select(".commtext").html(),
+                                       orThrow: APIError.unknown)
+                let comment = Comment(id: id, author: User(creation: Date(), description: nil,
+                                                           name: authorName, karma: 0),
+                                      text: text, comments: [], actions: [])
+                if level <= currentLevel {
+                    while commentsPerLevel.count > level + 1 {
+                        let currentComments = try unwrap(commentsPerLevel.popLast(),
+                                                         orThrow: APIError.unknown)
+                        let currentLevel = commentsPerLevel.count - 1
+                        let preCommentsCount = commentsPerLevel[currentLevel].count
+                        commentsPerLevel[currentLevel][preCommentsCount - 1].comments
+                            = currentComments
+                    }
+                    let currentLevel = commentsPerLevel.count - 1
+                    commentsPerLevel[currentLevel].append(comment)
+                } else {
+                    // level = currentLevel + 1
+                    commentsPerLevel.append([comment])
+                }
+            }
+            while commentsPerLevel.count > 1 {
+                let currentComments = try unwrap(commentsPerLevel.popLast(),
+                                                 orThrow: APIError.unknown)
+                let currentLevel = commentsPerLevel.count - 1
+                let preCommentsCount = commentsPerLevel[currentLevel].count
+                commentsPerLevel[currentLevel][preCommentsCount - 1].comments
+                    = currentComments
+            }
+            guard commentsPerLevel.count == 1 else {
+                throw APIError.unknown
+            }
+            let comments = commentsPerLevel[0]
             let promise = firstly {
                 user(withName: authorName)
             }.map { author -> Story in
                 Story(id: id, author: author, score: score, title: title, url: url, text: text,
-                      comments: [], actions: [])
+                      comments: comments, actions: [])
             }
             return promise
         }

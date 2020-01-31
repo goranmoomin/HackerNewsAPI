@@ -16,6 +16,9 @@ final class HackerNewsAPITests: XCTestCase {
             XCTAssertEqual(story.url, URL(string: "http://ijzerenhein.github.io/autolayout.js/"))
             XCTAssertEqual(story.title,
                            "Apple's auto layout and visual format language for JavaScript (2016)")
+            XCTAssertEqual(story.comments.count, 9)
+            XCTAssertEqual(story.comments[0].comments.count, 2)
+            XCTAssert(story.comments[0].text.hasPrefix("I find this layout"))
         } catch {
             XCTFail("Error \(error) thrown.")
         }
