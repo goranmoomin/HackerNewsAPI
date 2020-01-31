@@ -4,6 +4,15 @@ import PromiseKit
 
 final class HackerNewsAPITests: XCTestCase {
 
+    func testLogin() {
+        do {
+            HackerNewsAPI.logout()
+            try hang(HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd"))
+        } catch {
+            XCTFail("Error \(error) thrown.")
+        }
+    }
+
     func testLoadingURLStory() {
         do {
             let story = try hang(HackerNewsAPI.story(withID: 21997622))

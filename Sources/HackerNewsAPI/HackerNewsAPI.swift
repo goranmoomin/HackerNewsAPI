@@ -22,6 +22,23 @@ struct HackerNewsAPI {
 
     // MARK: - Static Methods
 
+    static func logout() {
+        guard let storage = urlSession.configuration.httpCookieStorage else {
+            return
+        }
+        storage.removeCookies(since: .distantPast)
+    }
+
+    static func login(toAccount account: String, password: String) -> Promise<Void> {
+        let url = URL(string: "https://news.ycombinator.com/login?acct=\(account)&pw=\(password)")!
+        let promise = firstly {
+            urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.asVoid()
+        return promise
+    }
+
     static func story(withID id: Int) -> Promise<Story> {
         let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
         let promise = firstly {
