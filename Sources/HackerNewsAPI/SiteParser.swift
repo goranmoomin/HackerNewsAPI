@@ -21,7 +21,7 @@ class SiteParser {
     }
     var rowEls: [Element]? {
         let rowEls = try! fatItemEl?.select("table.fatitem > tbody > tr").array()
-        guard rowEls?.count == 2 || rowEls?.count == 4 else {
+        guard rowEls?.count == 2 || rowEls?.count == 4 || rowEls?.count == 6 else {
             return nil
         }
         return rowEls
@@ -35,8 +35,18 @@ class SiteParser {
     var subTextEl: Element? {
         rowEls?[1]
     }
+    var isCommentable: Bool? {
+        try! fatItemEl?.select("form[action=comment]").first() != nil
+    }
     var hasText: Bool? {
-        rowEls?.count == 4
+        guard let isCommentable = isCommentable else {
+            return nil
+        }
+        if isCommentable {
+            return rowEls?.count == 6
+        } else {
+            return rowEls?.count == 4
+        }
     }
 
     // MARK: - Init
