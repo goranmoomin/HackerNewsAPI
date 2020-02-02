@@ -26,7 +26,7 @@ final class HackerNewsAPITests: XCTestCase {
             XCTAssertEqual(story.comments.count, 9)
             XCTAssertEqual(story.comments[0].comments.count, 2)
             XCTAssert(story.comments[0].text.hasPrefix("I find this layout"))
-            XCTAssertEqual(story.comments[0].actions, [.upvote])
+            XCTAssertEqual(story.comments[0].actions.map({ $0.kind }), [.upvote])
         } catch {
             XCTFail("Error \(error) thrown.")
         }
@@ -40,7 +40,7 @@ final class HackerNewsAPITests: XCTestCase {
             XCTAssertEqual(story.score, 25)
             XCTAssert(story.text?.hasPrefix("or HN: the Next Iteration") ?? false)
             XCTAssertEqual(story.title, "Ask HN: The Arc Effect")
-            XCTAssertEqual(story.actions, [.upvote])
+            XCTAssertEqual(story.actions.map({ $0.kind }), [.upvote])
         } catch {
             XCTFail("Error \(error) thrown.")
         }

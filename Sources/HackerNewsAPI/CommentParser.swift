@@ -54,26 +54,33 @@ class CommentParser {
     }
 
     func actions() throws -> Set<Action> {
-        let voteArrowEls = try! commentEl.select(".votelinks a > .votearrow").array()
+        let voteAnchorEls = try! commentEl.select(".votelinks a:has(.votearrow)")
         var actions: Set<Action> = []
-        for voteArrowEl in voteArrowEls {
+        let base = URL(string: "https://news.ycombinator.com")
+        for voteAnchorEl in voteAnchorEls {
+            let href = try perform(voteAnchorEl.attr("href"), orThrow: ParserError.unknown)
+            let url = try unwrap(URL(string: href, relativeTo: base), orThrow: ParserError.unknown)
+            let voteArrowEl = try unwrap(try! voteAnchorEl.select(".votearrow").first(),
+            orThrow: ParserError.unknown)
             let title = try perform(voteArrowEl.attr("title"), orThrow: ParserError.unknown)
             switch title {
             case "upvote":
-                actions.insert(.upvote)
+                actions.insert(.upvote(url))
             case "downvote":
-                actions.insert(.downvote)
+                actions.insert(.downvote(url))
             default:
                 throw ParserError.unknown
             }
         }
         if let undoAnchorEl = try! commentEl.select(".comhead [id^=unv] > a").first() {
+            let href = try perform(undoAnchorEl.attr("href"), orThrow: ParserError.unknown)
+            let url = try unwrap(URL(string: href, relativeTo: base), orThrow: ParserError.unknown)
             let text = try perform(undoAnchorEl.text(), orThrow: ParserError.unknown)
             switch text {
             case "unvote":
-                actions.insert(.unvote)
+                actions.insert(.unvote(url))
             case "undown":
-                actions.insert(.undown)
+                actions.insert(.undown(url))
             default:
                 throw ParserError.unknown
             }
