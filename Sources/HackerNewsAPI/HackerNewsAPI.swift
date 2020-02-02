@@ -50,7 +50,7 @@ struct HackerNewsAPI {
             let document = try perform(SwiftSoup.parse(html)) { error in
                 APIError.parsingFailed(error)
             }
-            let parser = SiteParser(document: document)
+            let parser = StoryParser(document: document)
             let authorName = try parser.authorName()
             let ageDescription = try parser.ageDescription()
             let score = try parser.score()

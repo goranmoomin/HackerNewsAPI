@@ -2,7 +2,7 @@
 import Foundation
 import SwiftSoup
 
-class SiteParser {
+class StoryParser {
 
     // MARK: - Error
 
@@ -111,36 +111,30 @@ class SiteParser {
     func commentTree() throws -> [Comment] {
         let commentEls = try! document.select(".comtr").array()
         var commentsPerLevel: [[Comment]] = [[]]
+        func attachComments(untilLevel level: Int) throws {
+            while commentsPerLevel.count - 1 > level {
+                let currentComments = try unwrap(commentsPerLevel.popLast(),
+                                                 orThrow: ParserError.unknown)
+                let currentLevel = commentsPerLevel.count - 1
+                let commentsCount = commentsPerLevel[currentLevel].count
+                commentsPerLevel[currentLevel][commentsCount - 1].comments = currentComments
+            }
+        }
         for commentEl in commentEls {
+            let parser = CommentParser(commentEl: commentEl)
             let currentLevel = commentsPerLevel.count - 1
-            let indentEl = try unwrap(try! commentEl.select(".ind > img").first(),
-                                      orThrow: ParserError.unknown)
-            let indentWidth = try perform(indentEl.attr("width"),
-                                          orThrow: ParserError.unknown)
-            let level = try unwrap(Int(indentWidth), orThrow: ParserError.unknown) / 40
+            let level = try parser.indentation()
             guard level <= currentLevel + 1 else {
                 throw ParserError.unknown
             }
-            let id = try unwrap(Int(commentEl.id()), orThrow: ParserError.unknown)
-            let authorEl = try unwrap(try! commentEl.select(".hnuser").first(),
-                                      orThrow: ParserError.unknown)
-            let authorName = try perform(authorEl.text(), orThrow: ParserError.unknown)
-            let text = try perform(commentEl.select(".commtext").html(),
-                                   orThrow: ParserError.unknown)
-            let ageEl = try unwrap(try! commentEl.select(".age").first(),
-                                   orThrow: ParserError.unknown)
-            let ageDescription = try perform(ageEl.text(), orThrow: ParserError.unknown)
+            let id = try parser.id()
+            let authorName = try parser.authorName()
+            let text = try parser.text()
+            let ageDescription = try parser.ageDescription()
             let comment = Comment(id: id, authorName: authorName, ageDescription: ageDescription,
                                   text: text, comments: [], actions: [])
             if level <= currentLevel {
-                while commentsPerLevel.count > level + 1 {
-                    let currentComments = try unwrap(commentsPerLevel.popLast(),
-                                                     orThrow: ParserError.unknown)
-                    let currentLevel = commentsPerLevel.count - 1
-                    let preCommentsCount = commentsPerLevel[currentLevel].count
-                    commentsPerLevel[currentLevel][preCommentsCount - 1].comments
-                        = currentComments
-                }
+                try attachComments(untilLevel: level)
                 let currentLevel = commentsPerLevel.count - 1
                 commentsPerLevel[currentLevel].append(comment)
             } else {
@@ -148,14 +142,7 @@ class SiteParser {
                 commentsPerLevel.append([comment])
             }
         }
-        while commentsPerLevel.count > 1 {
-            let currentComments = try unwrap(commentsPerLevel.popLast(),
-                                             orThrow: ParserError.unknown)
-            let currentLevel = commentsPerLevel.count - 1
-            let preCommentsCount = commentsPerLevel[currentLevel].count
-            commentsPerLevel[currentLevel][preCommentsCount - 1].comments
-                = currentComments
-        }
+        try attachComments(untilLevel: 0)
         guard commentsPerLevel.count == 1 else {
             throw ParserError.unknown
         }
