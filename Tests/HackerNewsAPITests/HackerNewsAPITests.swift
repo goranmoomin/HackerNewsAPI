@@ -16,9 +16,7 @@ final class HackerNewsAPITests: XCTestCase {
     func testLoadingURLStory() {
         do {
             let story = try hang(HackerNewsAPI.story(withID: 21997622))
-            XCTAssertEqual(story.author.name, "pcr910303")
-            XCTAssertEqual(story.author.creation, Date(timeIntervalSince1970: 1553991192))
-            XCTAssertEqual(story.author.description, "pcr910303 <at> icloud <dot> com")
+            XCTAssertEqual(story.authorName, "pcr910303")
             XCTAssertEqual(story.id, 21997622)
             XCTAssertEqual(story.score, 115)
             XCTAssertEqual(story.text, nil)
@@ -36,7 +34,7 @@ final class HackerNewsAPITests: XCTestCase {
     func testLoadingTextStory() {
         do {
             let story = try hang(HackerNewsAPI.story(withID: 121003))
-            XCTAssertEqual(story.author.name, "tel")
+            XCTAssertEqual(story.authorName, "tel")
             XCTAssertEqual(story.id, 121003)
             XCTAssertEqual(story.score, 25)
             XCTAssert(story.text?.hasPrefix("or HN: the Next Iteration") ?? false)

@@ -45,24 +45,22 @@ struct HackerNewsAPI {
             urlSession.dataTask(.promise, with: url).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
-        }.then { (data, response) -> Promise<Story> in
+        }.map { (data, response) -> Story in
             let html = String(data: data, urlResponse: response)!
             let document = try perform(SwiftSoup.parse(html)) { error in
                 APIError.parsingFailed(error)
             }
             let parser = SiteParser(document: document)
             let authorName = try parser.authorName()
+            let ageDescription = try parser.ageDescription()
             let score = try parser.score()
             let title = try parser.title()
             let (url, text) = try parser.content()
             let comments = try parser.commentTree()
-            let promise = firstly {
-                user(withName: authorName)
-            }.map { author -> Story in
-                Story(id: id, author: author, score: score, title: title, url: url, text: text,
-                      comments: comments, actions: [])
-            }
-            return promise
+            let story = Story(id: id, authorName: authorName, ageDescription: ageDescription,
+                              score: score, title: title, url: url, text: text, comments: comments,
+                              actions: [])
+            return story
         }
         return promise
     }

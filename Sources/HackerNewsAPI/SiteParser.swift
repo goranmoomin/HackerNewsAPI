@@ -80,6 +80,13 @@ class SiteParser {
         return authorName
     }
 
+    func ageDescription() throws -> String {
+        let ageEl = try unwrap(try! subTextEl?.select(".age").first(),
+                               orThrow: ParserError.unknown)
+        let ageDescription = try perform(ageEl.text(), orThrow: ParserError.unknown)
+        return ageDescription
+    }
+
     // FIXME: Use proper modeling with enums
     func content() throws -> (URL?, String?) {
         var url: URL?
@@ -120,8 +127,10 @@ class SiteParser {
             let authorName = try perform(authorEl.text(), orThrow: ParserError.unknown)
             let text = try perform(commentEl.select(".commtext").html(),
                                    orThrow: ParserError.unknown)
-            let comment = Comment(id: id, author: User(creation: Date(), description: nil,
-                                                       name: authorName, karma: 0),
+            let ageEl = try unwrap(try! commentEl.select(".age").first(),
+                                   orThrow: ParserError.unknown)
+            let ageDescription = try perform(ageEl.text(), orThrow: ParserError.unknown)
+            let comment = Comment(id: id, authorName: authorName, ageDescription: ageDescription,
                                   text: text, comments: [], actions: [])
             if level <= currentLevel {
                 while commentsPerLevel.count > level + 1 {

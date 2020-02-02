@@ -3,7 +3,8 @@ import Foundation
 
 struct Story: Item {
     var id: Int
-    var author: User
+    var authorName: String
+    var ageDescription: String
     var score: Int
     var title: String
     // Some stories don't have a URL or an empty string

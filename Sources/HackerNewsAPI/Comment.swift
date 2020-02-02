@@ -3,7 +3,8 @@ import Foundation
 
 struct Comment: Item {
     var id: Int
-    var author: User
+    var authorName: String
+    var ageDescription: String
     var text: String
     var comments: [Comment]
     var actions: Set<Action>
