@@ -55,11 +55,12 @@ struct HackerNewsAPI {
             let ageDescription = try parser.ageDescription()
             let score = try parser.score()
             let title = try parser.title()
+            let actions = try parser.actions()
             let (url, text) = try parser.content()
             let comments = try parser.commentTree()
             let story = Story(id: id, authorName: authorName, ageDescription: ageDescription,
                               score: score, title: title, url: url, text: text, comments: comments,
-                              actions: [])
+                              actions: actions)
             return story
         }
         return promise

@@ -87,6 +87,35 @@ class StoryParser {
         return ageDescription
     }
 
+    func actions() throws -> Set<Action> {
+        let voteArrowEls = try unwrap(try! fatItemEl?.select(".votelinks a > .votearrow").array(),
+                                     orThrow: ParserError.unknown)
+        var actions: Set<Action> = []
+        for voteArrowEl in voteArrowEls {
+            let title = try perform(voteArrowEl.attr("title"), orThrow: ParserError.unknown)
+            switch title {
+            case "upvote":
+                actions.insert(.upvote)
+            case "downvote":
+                actions.insert(.downvote)
+            default:
+                throw ParserError.unknown
+            }
+        }
+        if let undoAnchorEl = try! subTextEl?.select("[id^=unv] > a").first() {
+            let text = try perform(undoAnchorEl.text(), orThrow: ParserError.unknown)
+            switch text {
+            case "unvote":
+                actions.insert(.unvote)
+            case "undown":
+                actions.insert(.undown)
+            default:
+                throw ParserError.unknown
+            }
+        }
+        return actions
+    }
+
     // FIXME: Use proper modeling with enums
     func content() throws -> (URL?, String?) {
         var url: URL?
@@ -131,8 +160,9 @@ class StoryParser {
             let authorName = try parser.authorName()
             let text = try parser.text()
             let ageDescription = try parser.ageDescription()
+            let actions = try parser.actions()
             let comment = Comment(id: id, authorName: authorName, ageDescription: ageDescription,
-                                  text: text, comments: [], actions: [])
+                                  text: text, comments: [], actions: actions)
             if level <= currentLevel {
                 try attachComments(untilLevel: level)
                 let currentLevel = commentsPerLevel.count - 1
