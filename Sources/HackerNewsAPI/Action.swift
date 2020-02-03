@@ -17,10 +17,14 @@ struct Action: Hashable {
     var kind: Kind
     var url: URL
 
-    // MARK: - Methods
+    // MARK: - Comparing
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(kind)
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.kind == rhs.kind
     }
 
     // MARK: - Helper functions
