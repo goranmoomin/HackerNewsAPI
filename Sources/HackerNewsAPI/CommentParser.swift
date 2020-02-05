@@ -4,12 +4,6 @@ import SwiftSoup
 
 class CommentParser {
 
-    // MARK: - Error
-
-    enum ParserError: Error {
-        case unknown
-    }
-
     // MARK: - Stored Properties
 
     var commentEl: Element

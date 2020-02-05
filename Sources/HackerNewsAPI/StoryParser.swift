@@ -4,12 +4,6 @@ import SwiftSoup
 
 class StoryParser {
 
-    // MARK: - Error
-
-    enum ParserError: Error {
-        case unknown
-    }
-
     // MARK: - Stored Properties
 
     var document: Document
