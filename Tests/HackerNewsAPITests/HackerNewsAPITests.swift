@@ -46,6 +46,31 @@ final class HackerNewsAPITests: XCTestCase {
         }
     }
 
+    func testLoadingURLJob() {
+        do {
+            let job = try hang(HackerNewsAPI.job(withID: 22188212))
+            XCTAssertEqual(job.id, 22188212)
+            XCTAssertEqual(job.title, "XIX (YC W17) Is Hiring Engineers in San Francisco")
+            XCTAssertEqual(job.url, URL(string: "https://jobs.lever.co/xix"))
+            XCTAssertEqual(job.text, nil)
+        } catch {
+            XCTFail("Error \(error) thrown.")
+        }
+    }
+
+    func testLoadingTextJob() {
+        do {
+            let job = try hang(HackerNewsAPI.job(withID: 192327))
+            XCTAssertEqual(job.id, 192327)
+            XCTAssertEqual(job.ageDescription, "on May 16, 2008")
+            XCTAssertEqual(job.title, "Justin.tv is looking for a Lead Flash Engineer!")
+            XCTAssertEqual(job.url, nil)
+            XCTAssert(job.text?.hasPrefix("Justin.tv is the biggest live") ?? false)
+        } catch {
+            XCTFail("Error \(error) thrown.")
+        }
+    }
+
     func testLoadingUser() {
         do {
             let user = try hang(HackerNewsAPI.user(withName: "pcr910303"))

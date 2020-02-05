@@ -66,6 +66,28 @@ struct HackerNewsAPI {
         return promise
     }
 
+    static func job(withID id: Int) -> Promise<Job> {
+        let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
+        let promise = firstly {
+            urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.map { (data, response) -> Job in
+            let html = String(data: data, urlResponse: response)!
+            let document = try perform(SwiftSoup.parse(html)) { error in
+                APIError.parsingFailed(error)
+            }
+            let parser = StoryParser(document: document)
+            let ageDescription = try parser.ageDescription()
+            let title = try parser.title()
+            let (url, text) = try parser.content()
+            let job = Job(id: id, ageDescription: ageDescription, title: title, url: url,
+                          text: text)
+            return job
+        }
+        return promise
+    }
+
     static func user(withName name: String) -> Promise<User> {
         let url = URL(string: "https://hacker-news.firebaseio.com/v0/user/\(name).json")!
         struct UserContainer: Decodable {
