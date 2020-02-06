@@ -1,11 +1,11 @@
 
 import Foundation
 
-struct Comment: Item {
-    var id: Int
-    var authorName: String
-    var ageDescription: String
-    var text: String
-    var comments: [Comment]
-    var actions: Set<Action>
+public struct Comment: Item {
+    public var id: Int
+    public var authorName: String
+    public var ageDescription: String
+    public var text: String
+    public var comments: [Comment]
+    public var actions: Set<Action>
 }

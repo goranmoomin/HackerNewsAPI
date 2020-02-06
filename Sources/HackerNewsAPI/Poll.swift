@@ -1,11 +1,11 @@
 
 import Foundation
 
-struct Poll: Item {
-    var id: Int
-    var author: User
-    var score: Int
-    var title: String
-    var text: String
-    var actions: Set<Action>
+public struct Poll: Item {
+    public var id: Int
+    public var author: User
+    public var score: Int
+    public var title: String
+    public var text: String
+    public var actions: Set<Action>
 }

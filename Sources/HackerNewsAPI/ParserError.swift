@@ -1,6 +1,6 @@
 
 import Foundation
 
-enum ParserError: Error {
+public enum ParserError: Error {
     case unknown
 }

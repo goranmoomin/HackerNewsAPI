@@ -5,11 +5,11 @@ import PMKFoundation
 import SwiftSoup
 import HTMLEntities
 
-struct HackerNewsAPI {
+public struct HackerNewsAPI {
 
     // MARK: - Errors
 
-    enum APIError: Error {
+    public enum APIError: Error {
         case networkingFailed(Error)
         case decodingFailed(Error)
         case parsingFailed(Error)
@@ -22,14 +22,14 @@ struct HackerNewsAPI {
 
     // MARK: - Static Methods
 
-    static func logout() {
+    public static func logout() {
         guard let storage = urlSession.configuration.httpCookieStorage else {
             return
         }
         storage.removeCookies(since: .distantPast)
     }
 
-    static func login(toAccount account: String, password: String) -> Promise<Void> {
+    public static func login(toAccount account: String, password: String) -> Promise<Void> {
         let url = URL(string: "https://news.ycombinator.com/login?acct=\(account)&pw=\(password)")!
         let promise = firstly {
             urlSession.dataTask(.promise, with: url).validate()
@@ -39,7 +39,7 @@ struct HackerNewsAPI {
         return promise
     }
 
-    static func topItems() -> Promise<[ListableItem]> {
+    public static func topItems() -> Promise<[ListableItem]> {
         let url = URL(string: "https://news.ycombinator.com/")!
         let promise = firstly {
             urlSession.dataTask(.promise, with: url).validate()
@@ -57,7 +57,7 @@ struct HackerNewsAPI {
         return promise
     }
 
-    static func newItems() -> Promise<[ListableItem]> {
+    public static func newItems() -> Promise<[ListableItem]> {
         let url = URL(string: "https://news.ycombinator.com/newest")!
         let promise = firstly {
             urlSession.dataTask(.promise, with: url).validate()
@@ -75,7 +75,7 @@ struct HackerNewsAPI {
         return promise
     }
 
-    static func story(withID id: Int) -> Promise<Story> {
+    public static func story(withID id: Int) -> Promise<Story> {
         let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
         let promise = firstly {
             urlSession.dataTask(.promise, with: url).validate()
@@ -102,7 +102,7 @@ struct HackerNewsAPI {
         return promise
     }
 
-    static func job(withID id: Int) -> Promise<Job> {
+    public static func job(withID id: Int) -> Promise<Job> {
         let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
         let promise = firstly {
             urlSession.dataTask(.promise, with: url).validate()
@@ -124,7 +124,7 @@ struct HackerNewsAPI {
         return promise
     }
 
-    static func user(withName name: String) -> Promise<User> {
+    public static func user(withName name: String) -> Promise<User> {
         let url = URL(string: "https://hacker-news.firebaseio.com/v0/user/\(name).json")!
         struct UserContainer: Decodable {
             var about: String?

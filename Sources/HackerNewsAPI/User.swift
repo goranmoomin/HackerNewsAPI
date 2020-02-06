@@ -1,9 +1,9 @@
 
 import Foundation
 
-struct User {
-    var creation: Date
-    var description: String?
-    var name: String
-    var karma: Int
+public struct User {
+    public var creation: Date
+    public var description: String?
+    public var name: String
+    public var karma: Int
 }

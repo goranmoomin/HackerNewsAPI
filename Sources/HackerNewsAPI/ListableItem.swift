@@ -1,12 +1,12 @@
 
 import Foundation
 
-struct ListableItem: Item {
-    var id: Int
+public struct ListableItem: Item {
+    public var id: Int
     // Jobs don't have author names
-    var authorName: String?
-    var ageDescription: String
-    var score: Int?
-    var title: String
-    var actions: Set<Action>
+    public var authorName: String?
+    public var ageDescription: String
+    public var score: Int?
+    public var title: String
+    public var actions: Set<Action>
 }

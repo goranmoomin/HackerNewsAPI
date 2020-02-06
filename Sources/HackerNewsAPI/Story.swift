@@ -1,16 +1,16 @@
 
 import Foundation
 
-struct Story: Item {
-    var id: Int
-    var authorName: String
-    var ageDescription: String
-    var score: Int
-    var title: String
+public struct Story: Item {
+    public var id: Int
+    public var authorName: String
+    public var ageDescription: String
+    public var score: Int
+    public var title: String
     // Some stories don't have a URL or an empty string
-    var url: URL?
+    public var url: URL?
     // but have text.
-    var text: String?
-    var comments: [Comment]
-    var actions: Set<Action>
+    public var text: String?
+    public var comments: [Comment]
+    public var actions: Set<Action>
 }

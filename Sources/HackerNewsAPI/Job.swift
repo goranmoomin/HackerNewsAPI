@@ -1,12 +1,12 @@
 
 import Foundation
 
-struct Job: Item {
-    var id: Int
-    var ageDescription: String
-    var title: String
+public struct Job: Item {
+    public var id: Int
+    public var ageDescription: String
+    public var title: String
     // Some jobs don't have a URL or an empty string
-    var url: URL?
+    public var url: URL?
     // but have text.
-    var text: String?
+    public var text: String?
 }
