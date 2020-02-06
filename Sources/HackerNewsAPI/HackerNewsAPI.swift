@@ -39,6 +39,42 @@ struct HackerNewsAPI {
         return promise
     }
 
+    static func topItems() -> Promise<[ListableItem]> {
+        let url = URL(string: "https://news.ycombinator.com/")!
+        let promise = firstly {
+            urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.map { (data, response) -> [ListableItem] in
+            let html = String(data: data, urlResponse: response)!
+            let document = try perform(SwiftSoup.parse(html)) { error in
+                APIError.parsingFailed(error)
+            }
+            let parser = ItemListParser(document: document)
+            let items = try parser.items()
+            return items
+        }
+        return promise
+    }
+
+    static func newItems() -> Promise<[ListableItem]> {
+        let url = URL(string: "https://news.ycombinator.com/newest")!
+        let promise = firstly {
+            urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.map { (data, response) -> [ListableItem] in
+            let html = String(data: data, urlResponse: response)!
+            let document = try perform(SwiftSoup.parse(html)) { error in
+                APIError.parsingFailed(error)
+            }
+            let parser = ItemListParser(document: document)
+            let items = try parser.items()
+            return items
+        }
+        return promise
+    }
+
     static func story(withID id: Int) -> Promise<Story> {
         let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
         let promise = firstly {

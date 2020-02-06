@@ -13,6 +13,24 @@ final class HackerNewsAPITests: XCTestCase {
         }
     }
 
+    func testLoadingTopItems() {
+        do {
+            let items = try hang(HackerNewsAPI.topItems())
+            XCTAssertEqual(items.count, 30)
+        } catch {
+            XCTFail("Error \(error) thrown.")
+        }
+    }
+
+    func testLoadingNewItems() {
+        do {
+            let items = try hang(HackerNewsAPI.newItems())
+            XCTAssertEqual(items.count, 30)
+        } catch {
+            XCTFail("Error \(error) thrown.")
+        }
+    }
+
     func testLoadingURLStory() {
         do {
             let story = try hang(HackerNewsAPI.story(withID: 21997622))
