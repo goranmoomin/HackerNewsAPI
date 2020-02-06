@@ -8,6 +8,8 @@ final class HackerNewsAPITests: XCTestCase {
         do {
             HackerNewsAPI.logout()
             try hang(HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd"))
+            let story = try hang(HackerNewsAPI.story(withID: 22254596))
+            XCTAssertEqual(story.actions, [])
         } catch {
             XCTFail("Error \(error) thrown.")
         }
