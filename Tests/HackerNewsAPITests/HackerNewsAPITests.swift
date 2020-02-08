@@ -107,7 +107,7 @@ final class HackerNewsAPITests: XCTestCase {
         do {
             let user = try hang(HackerNewsAPI.user(withName: "gshdg"))
             XCTAssertEqual(user.creation, Date(timeIntervalSince1970: 1556329319))
-            XCTAssertEqual(user.description, nil)
+            XCTAssertEqual(user.description, "")
             XCTAssertEqual(user.name, "gshdg")
         } catch {
             XCTFail("Error \(error) thrown.")

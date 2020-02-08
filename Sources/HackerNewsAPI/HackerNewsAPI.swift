@@ -3,7 +3,6 @@ import Foundation
 import PromiseKit
 import PMKFoundation
 import SwiftSoup
-import HTMLEntities
 
 public struct HackerNewsAPI {
 
@@ -140,7 +139,7 @@ public struct HackerNewsAPI {
                 APIError.decodingFailed(error)
             }
             let creation = user.created
-            let description = user.about?.htmlUnescape()
+            let description = try perform(Entities.unescape(user.about ?? ""), orThrow: APIError.unknown)
             let karma = user.karma
             return User(creation: creation, description: description, name: name, karma: karma)
         }
