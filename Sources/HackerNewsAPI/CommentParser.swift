@@ -37,7 +37,9 @@ class CommentParser {
     }
 
     func text() throws -> String {
-        try perform(commentEl.select(".commtext").html(), orThrow: ParserError.unknown)
+        let commTextChildEls = try! commentEl.select(".commtext").first()?.getChildNodes() ?? []
+        let commentTextEls = commTextChildEls.filter({ (try? $0.attr("class") != "reply") ?? true })
+        return try perform(commentTextEls.reduce("", { try $0 + $1.outerHtml() }), orThrow: ParserError.unknown)
     }
 
     func ageDescription() throws -> String {
