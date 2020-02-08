@@ -12,5 +12,8 @@ public struct Story: Item {
     // but have text.
     public var text: String?
     public var comments: [Comment]
+    public var commentCount: Int {
+        comments.reduce(0, { $0 + $1.commentCount })
+    }
     public var actions: Set<Action>
 }
