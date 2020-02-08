@@ -9,4 +9,6 @@ public struct ListableItem: Item {
     public var score: Int?
     public var title: String
     public var actions: Set<Action>
+    // Jobs don't have comments
+    public var commentCount: Int?
 }

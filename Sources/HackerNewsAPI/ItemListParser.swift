@@ -29,12 +29,25 @@ class ItemListParser {
             let scoreText = try perform(scoreEl.text().split(separator: .space)[0],
                                         orThrow: ParserError.unknown)
             score = try unwrap(Int(scoreText), orThrow: ParserError.unknown)
+
         }
         let titleAnchorEl = try unwrap(try! aThingEl.select(".storylink").first(),
                                        orThrow: ParserError.unknown)
         let title = try perform(titleAnchorEl.text(), orThrow: ParserError.unknown)
+        var commentCount: Int?
+        let commentCountElSelector = "a:matches((?:comments?|discuss)$)"
+        if let commentCountEl = try! subTextEl.select(commentCountElSelector).first() {
+            let commentCountText = try perform(commentCountEl.text(), orThrow: ParserError.unknown)
+            if commentCountText == "discuss" {
+                commentCount = 0
+            } else {
+                let commentCountNumText = commentCountText.split(separator: .nonBreakingSpace)[0]
+                commentCount = try unwrap(Int(commentCountNumText), orThrow: ParserError.unknown)
+            }
+        }
         let item = ListableItem(id: id, authorName: authorName, ageDescription: ageDescription,
-                                score: score, title: title, actions: [])
+                                score: score, title: title, actions: [],
+                                commentCount: commentCount)
         return item
     }
 
