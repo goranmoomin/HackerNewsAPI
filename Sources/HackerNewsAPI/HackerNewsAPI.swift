@@ -91,6 +91,18 @@ public struct HackerNewsAPI {
         return promise
     }
 
+    public static func topLevelItem(from listableItem: ListableItem) -> Promise<TopLevelItem> {
+        let id = listableItem.id
+        switch listableItem.kind {
+        case .story:
+            return story(withID: id).map({ .story($0) })
+        case .job:
+            return job(withID: id).map({ .job($0) })
+        case .poll:
+            fatalError("Loading polls aren't implemented yet.")
+        }
+    }
+
     public static func job(withID id: Int) -> Promise<Job> {
         let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
         let promise = firstly {

@@ -33,6 +33,16 @@ final class HackerNewsAPITests: XCTestCase {
         }
     }
 
+    func testLoadingTopLevelItem() {
+        do {
+            let items = try hang(HackerNewsAPI.topItems())
+            let item = items[0]
+            _ = try hang(HackerNewsAPI.topLevelItem(from: item))
+        } catch {
+            XCTFail("Error \(error) thrown.")
+        }
+    }
+
     func testLoadingURLStory() {
         do {
             let story = try hang(HackerNewsAPI.story(withID: 21997622))

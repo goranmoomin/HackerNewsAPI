@@ -19,8 +19,11 @@ class ItemListParser {
     func item(aThingEl: Element, subTextEl: Element) throws -> ListableItem {
         let id = try unwrap(Int(aThingEl.id()), orThrow: ParserError.unknown)
         var authorName: String?
+        var kind: ListableItem.Kind = .story
         if let authorEl = try! subTextEl.select(".hnuser").first() {
             authorName = try perform(authorEl.text(), orThrow: ParserError.unknown)
+        } else {
+            kind = .job
         }
         let ageEl = try unwrap(try! subTextEl.select(".age").first(), orThrow: ParserError.unknown)
         let ageDescription = try perform(ageEl.text(), orThrow: ParserError.unknown)
@@ -50,7 +53,7 @@ class ItemListParser {
                 commentCount = try unwrap(Int(commentCountNumText), orThrow: ParserError.unknown)
             }
         }
-        let item = ListableItem(id: id, url: url, authorName: authorName,
+        let item = ListableItem(kind: kind, id: id, url: url, authorName: authorName,
                                 ageDescription: ageDescription, score: score, title: title,
                                 actions: [], commentCount: commentCount)
         return item

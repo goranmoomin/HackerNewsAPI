@@ -2,6 +2,12 @@
 import Foundation
 
 public struct ListableItem {
+    public enum Kind {
+        case story
+        case job
+        case poll
+    }
+    public var kind: Kind
     // A job doesn't have an author name, score, and comments
     public var id: Int
     public var url: URL?
