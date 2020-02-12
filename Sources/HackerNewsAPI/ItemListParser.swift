@@ -33,6 +33,9 @@ class ItemListParser {
         }
         let titleAnchorEl = try unwrap(try! aThingEl.select(".storylink").first(),
                                        orThrow: ParserError.unknown)
+        let href = try perform(titleAnchorEl.attr("href"), orThrow: ParserError.unknown)
+        let base = URL(string: "https://news.ycombinator.com")
+        let url = try unwrap(URL(string: href, relativeTo: base), orThrow: ParserError.unknown)
         let title = try perform(titleAnchorEl.text(), orThrow: ParserError.unknown)
         var commentCount: Int?
         let commentCountElSelector = "a:matches((?:comments?|discuss)$)"
@@ -45,9 +48,9 @@ class ItemListParser {
                 commentCount = try unwrap(Int(commentCountNumText), orThrow: ParserError.unknown)
             }
         }
-        let item = ListableItem(id: id, authorName: authorName, ageDescription: ageDescription,
-                                score: score, title: title, actions: [],
-                                commentCount: commentCount)
+        let item = ListableItem(id: id, url: url, authorName: authorName,
+                                ageDescription: ageDescription, score: score, title: title,
+                                actions: [], commentCount: commentCount)
         return item
     }
 
