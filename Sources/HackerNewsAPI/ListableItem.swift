@@ -2,7 +2,7 @@
 import Foundation
 
 public struct ListableItem: Item {
-    // A job doesn't have url, author name, score, and comments
+    // A job doesn't have an author name, score, and comments
     public var id: Int
     public var url: URL?
     public var authorName: String?

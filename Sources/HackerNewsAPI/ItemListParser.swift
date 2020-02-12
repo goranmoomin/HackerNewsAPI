@@ -34,8 +34,10 @@ class ItemListParser {
         let titleAnchorEl = try unwrap(try! aThingEl.select(".storylink").first(),
                                        orThrow: ParserError.unknown)
         let href = try perform(titleAnchorEl.attr("href"), orThrow: ParserError.unknown)
-        let base = URL(string: "https://news.ycombinator.com")
-        let url = try unwrap(URL(string: href, relativeTo: base), orThrow: ParserError.unknown)
+        var url: URL? = URL(string: href)
+        if !(url?.isAbsolute ?? false) {
+            url = nil
+        }
         let title = try perform(titleAnchorEl.text(), orThrow: ParserError.unknown)
         var commentCount: Int?
         let commentCountElSelector = "a:matches((?:comments?|discuss)$)"
