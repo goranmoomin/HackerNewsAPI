@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Job: Item {
+public struct Job {
     public var id: Int
     public var ageDescription: String
     public var title: String

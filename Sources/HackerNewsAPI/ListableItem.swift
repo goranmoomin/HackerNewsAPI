@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct ListableItem: Item {
+public struct ListableItem {
     // A job doesn't have an author name, score, and comments
     public var id: Int
     public var url: URL?

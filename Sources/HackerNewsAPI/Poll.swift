@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Poll: Item {
+public struct Poll {
     public var id: Int
     public var author: User
     public var score: Int

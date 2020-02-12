@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Comment: Item {
+public struct Comment {
     public var id: Int
     public var authorName: String
     public var ageDescription: String

@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Story: Item {
+public struct Story {
     public var id: Int
     public var authorName: String
     public var ageDescription: String
