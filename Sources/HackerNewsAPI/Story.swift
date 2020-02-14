@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Story {
+public struct Story: Equatable, Hashable {
     public var id: Int
     public var authorName: String
     public var ageDescription: String

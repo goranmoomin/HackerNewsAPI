@@ -1,8 +1,8 @@
 
 import Foundation
 
-public struct ListableItem {
-    public enum Kind {
+public struct ListableItem: Equatable, Hashable {
+    public enum Kind: Equatable, Hashable {
         case story
         case job
         case poll

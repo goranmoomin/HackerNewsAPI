@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Job {
+public struct Job: Equatable, Hashable {
     public var id: Int
     public var ageDescription: String
     public var title: String

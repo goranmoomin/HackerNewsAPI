@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Poll {
+public struct Poll: Equatable, Hashable {
     public var id: Int
     public var author: User
     public var score: Int

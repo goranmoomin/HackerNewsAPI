@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct User {
+public struct User: Equatable, Hashable {
     public var creation: Date
     public var description: String
     public var name: String

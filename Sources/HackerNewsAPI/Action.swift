@@ -1,11 +1,11 @@
 
 import Foundation
 
-public struct Action: Hashable {
+public struct Action: Equatable, Hashable {
 
     // MARK: - Action Types
 
-    public enum Kind: Hashable {
+    public enum Kind: Equatable, Hashable {
         case upvote
         case downvote
         case unvote

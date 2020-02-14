@@ -1,7 +1,7 @@
 
 import Foundation
 
-public struct Comment {
+public struct Comment: Equatable, Hashable {
     public var id: Int
     public var authorName: String
     public var ageDescription: String
