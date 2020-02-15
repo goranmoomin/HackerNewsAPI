@@ -4,14 +4,29 @@ import PromiseKit
 
 final class HackerNewsAPITests: XCTestCase {
 
-    func testLogin() {
+    func testSuccessfulLogin() {
         do {
-            HackerNewsAPI.logout()
             try hang(HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd"))
             let story = try hang(HackerNewsAPI.story(withID: 22254596))
             XCTAssertEqual(story.actions, [])
         } catch {
             XCTFail("Error \(error) thrown.")
+        }
+    }
+
+    func testUnsuccessfulLogin() {
+        let promise = HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd!")
+        XCTAssertThrowsError(try hang(promise)) { error in
+            guard let error = error as? HackerNewsAPI.APIError else {
+                XCTFail()
+                return
+            }
+            switch error {
+            case .loginFailed:
+                return
+            default:
+                XCTFail()
+            }
         }
     }
 

@@ -12,6 +12,7 @@ public struct HackerNewsAPI {
         case networkingFailed(Error)
         case decodingFailed(Error)
         case parsingFailed(Error)
+        case loginFailed
         case unknown
     }
 
@@ -29,12 +30,21 @@ public struct HackerNewsAPI {
     }
 
     public static func login(toAccount account: String, password: String) -> Promise<Void> {
+        logout()
         let url = URL(string: "https://news.ycombinator.com/login?acct=\(account)&pw=\(password)")!
         let promise = firstly {
             urlSession.dataTask(.promise, with: url).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
-        }.asVoid()
+        }.map { (data, response) in
+            guard let storage = urlSession.configuration.httpCookieStorage else {
+                return
+            }
+            let cookies = storage.cookies(for: url) ?? []
+            guard cookies.first(where: { $0.name == "user" }) != nil else {
+                throw APIError.loginFailed
+            }
+        }
         return promise
     }
 
