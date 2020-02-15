@@ -8,67 +8,79 @@ class StoryParser {
 
     var document: Document
 
-    // MARK: - Computed Properties
-
-    var fatItemEl: Element? {
-        try! document.select(".fatitem").first()
-    }
-    var rowEls: [Element]? {
-        let rowEls = try! fatItemEl?.select("table.fatitem > tbody > tr").array()
-        guard rowEls?.count == 2 || rowEls?.count == 4 || rowEls?.count == 6 else {
-            return nil
-        }
-        return rowEls
-    }
-    var itemEl: Element? {
-        rowEls?[0]
-    }
-    var titleAnchorEl: Element? {
-        try! itemEl?.select(".storylink").first()
-    }
-    var subTextEl: Element? {
-        rowEls?[1]
-    }
-    var isCommentable: Bool? {
-        try! fatItemEl?.select("form[action=comment]").first() != nil
-    }
-    var hasText: Bool? {
-        guard let isCommentable = isCommentable else {
-            return nil
-        }
-        if isCommentable {
-            return rowEls?.count == 6
-        } else {
-            return rowEls?.count == 4
-        }
-    }
-
     // MARK: - Init
 
     init(document: Document) {
         self.document = document
     }
 
+    // MARK: - Helper Methods
+
+    func fatItemEl() throws -> Element {
+        let fatItemEl = try unwrap(try! document.select(".fatitem").first(),
+                                   orThrow: ParserError.unknown)
+        return fatItemEl
+    }
+
+    func rowEls() throws -> [Element] {
+        let fatItemEl = try self.fatItemEl()
+        let rowEls = try! fatItemEl.select("table.fatitem > tbody > tr").array()
+        guard rowEls.count == 2 || rowEls.count == 4 || rowEls.count == 6 else {
+            throw ParserError.unknown
+        }
+        return rowEls
+    }
+
+    func titleAnchorEl() throws -> Element {
+        let rowEls = try self.rowEls()
+        let itemEl = rowEls[0]
+        let titleAnchorEl = try unwrap(try! itemEl.select(".storylink").first(),
+                                       orThrow: ParserError.unknown)
+        return titleAnchorEl
+    }
+
+    func subTextEl() throws -> Element {
+        let fatItemEl = try self.fatItemEl()
+        let subTextEl = try unwrap(try! fatItemEl.select(".subtext").first(),
+                                   orThrow: ParserError.unknown)
+        return subTextEl
+    }
+
+    func commentFormEl() throws -> Element? {
+        let fatItemEl = try self.fatItemEl()
+        let commentFormEl = try! fatItemEl.select("form[action=comment]").first()
+        return commentFormEl
+    }
+
+    func hasText() throws -> Bool {
+        let rowEls = try self.rowEls()
+        let commentFormEl = try self.commentFormEl()
+        if commentFormEl != nil {
+            return rowEls.count == 6
+        } else {
+            return rowEls.count == 4
+        }
+    }
+
     // MARK: - Methods
 
     func id() throws -> Int {
-        guard let aThingEl = try! fatItemEl?.select(".athing").first() else {
-            throw ParserError.unknown
-        }
+        let fatItemEl = try self.fatItemEl()
+        let aThingEl = try unwrap(try! fatItemEl.select(".athing").first(),
+                                  orThrow: ParserError.unknown)
         let id = try unwrap(Int(aThingEl.id()), orThrow: ParserError.unknown)
         return id
     }
 
     func title() throws -> String {
-        guard let titleAnchorEl = titleAnchorEl else {
-            throw ParserError.unknown
-        }
+        let titleAnchorEl = try self.titleAnchorEl()
         let title = try perform(titleAnchorEl.text(), orThrow: ParserError.unknown)
         return title
     }
 
     func score() throws -> Int {
-        let scoreEl = try unwrap(try! subTextEl?.select(".score"),
+        let subTextEl = try self.subTextEl()
+        let scoreEl = try unwrap(try! subTextEl.select(".score").first(),
                                  orThrow: ParserError.unknown)
         let scoreText = try perform(scoreEl.text().split(separator: .space)[0],
                                     orThrow: ParserError.unknown)
@@ -77,21 +89,24 @@ class StoryParser {
     }
 
     func authorName() throws -> String {
-        let authorEl = try unwrap(try! subTextEl?.select(".hnuser"),
+        let subTextEl = try self.subTextEl()
+        let authorEl = try unwrap(try! subTextEl.select(".hnuser").first(),
                                   orThrow: ParserError.unknown)
         let authorName = try perform(authorEl.text(), orThrow: ParserError.unknown)
         return authorName
     }
 
     func ageDescription() throws -> String {
-        let ageEl = try unwrap(try! subTextEl?.select(".age").first(),
+        let subTextEl = try self.subTextEl()
+        let ageEl = try unwrap(try! subTextEl.select(".age").first(),
                                orThrow: ParserError.unknown)
         let ageDescription = try perform(ageEl.text(), orThrow: ParserError.unknown)
         return ageDescription
     }
 
     func actions() throws -> Set<Action> {
-        let voteAnchorEls = try unwrap(try! fatItemEl?.select(".votelinks a:has(.votearrow)"),
+        let fatItemEl = try self.fatItemEl()
+        let voteAnchorEls = try unwrap(try! fatItemEl.select(".votelinks a:has(.votearrow)"),
                                        orThrow: ParserError.unknown)
         var actions: Set<Action> = []
         let base = URL(string: "https://news.ycombinator.com")
@@ -110,7 +125,8 @@ class StoryParser {
                 throw ParserError.unknown
             }
         }
-        if let undoAnchorEl = try! subTextEl?.select("[id^=unv] > a").first() {
+        let subTextEl = try self.subTextEl()
+        if let undoAnchorEl = try! subTextEl.select("[id^=unv] > a").first() {
             let href = try perform(undoAnchorEl.attr("href"), orThrow: ParserError.unknown)
             let url = try unwrap(URL(string: href, relativeTo: base), orThrow: ParserError.unknown)
             let text = try perform(undoAnchorEl.text(), orThrow: ParserError.unknown)
@@ -130,19 +146,16 @@ class StoryParser {
     func content() throws -> (URL?, String?) {
         var url: URL?
         var text: String?
-        guard let hasText = hasText else {
-            throw ParserError.unknown
-        }
+        let hasText = try self.hasText()
+        let rowEls = try self.rowEls()
         if hasText {
-            let textEl = try unwrap(rowEls?[3].child(1), orThrow: ParserError.unknown)
+            let textEl = try unwrap(rowEls[3].child(1), orThrow: ParserError.unknown)
             text = try perform(textEl.text(), orThrow: ParserError.unknown)
         } else {
-            guard let titleAnchorEl = titleAnchorEl else {
-                throw ParserError.unknown
-            }
-            let urlString = try perform(titleAnchorEl.attr("href"),
-                                        orThrow: ParserError.unknown)
-            url = URL(string: urlString)
+            let titleAnchorEl = try self.titleAnchorEl()
+            let href = try perform(titleAnchorEl.attr("href"),
+                                   orThrow: ParserError.unknown)
+            url = URL(string: href)
         }
         return (url, text)
     }
@@ -189,7 +202,6 @@ class StoryParser {
         let comments = commentsPerLevel[0]
         return comments
     }
-
     func story() throws -> Story {
         let id = try self.id()
         let authorName = try self.authorName()
