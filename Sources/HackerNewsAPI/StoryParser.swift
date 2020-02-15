@@ -51,6 +51,14 @@ class StoryParser {
 
     // MARK: - Methods
 
+    func id() throws -> Int {
+        guard let aThingEl = try! fatItemEl?.select(".athing").first() else {
+            throw ParserError.unknown
+        }
+        let id = try unwrap(Int(aThingEl.id()), orThrow: ParserError.unknown)
+        return id
+    }
+
     func title() throws -> String {
         guard let titleAnchorEl = titleAnchorEl else {
             throw ParserError.unknown
@@ -180,5 +188,20 @@ class StoryParser {
         }
         let comments = commentsPerLevel[0]
         return comments
+    }
+
+    func story() throws -> Story {
+        let id = try self.id()
+        let authorName = try self.authorName()
+        let ageDescription = try self.ageDescription()
+        let score = try self.score()
+        let title = try self.title()
+        let actions = try self.actions()
+        let (url, text) = try content()
+        let comments = try commentTree()
+        let story = Story(id: id, authorName: authorName, ageDescription: ageDescription,
+                          score: score, title: title, url: url, text: text, comments: comments,
+                          actions: actions)
+        return story
     }
 }
