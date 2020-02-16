@@ -202,6 +202,7 @@ class StoryParser {
         let comments = commentsPerLevel[0]
         return comments
     }
+
     func story() throws -> Story {
         let id = try self.id()
         let authorName = try self.authorName()

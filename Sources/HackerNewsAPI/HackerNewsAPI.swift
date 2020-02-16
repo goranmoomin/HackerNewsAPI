@@ -13,6 +13,7 @@ public struct HackerNewsAPI {
         case decodingFailed(Error)
         case parsingFailed(Error)
         case loginFailed
+        case notCommentable
         case unknown
     }
 
@@ -146,6 +147,33 @@ public struct HackerNewsAPI {
             let karma = user.karma
             return User(creation: creation, description: description, name: name, karma: karma)
         }
+        return promise
+    }
+
+    public static func comment(on story: Story, as text: String) -> Promise<Void> {
+        let id = story.id
+        let url = URL(string: "https://news.ycombinator.com/comment?parent=\(id)")!
+        let promise = firstly {
+            urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.then { (data, response) -> Promise<(data: Data, response: URLResponse)> in
+            let html = String(data: data, urlResponse: response)!
+            let document = try SwiftSoup.parse(html)
+            let parser = CommentConfirmationParser(document: document)
+            guard let hmac = parser.hmac() else {
+                throw APIError.notCommentable
+            }
+            var urlComponents = URLComponents(string: "https://news.ycombinator.com/comment")!
+            urlComponents.queryItems = [
+                URLQueryItem(name: "parent", value: String(id)),
+                URLQueryItem(name: "hmac", value: hmac),
+                URLQueryItem(name: "text", value: text)
+            ]
+            let url = urlComponents.url!
+            let promise = urlSession.dataTask(.promise, with: url).validate()
+            return promise
+        }.asVoid()
         return promise
     }
 }
