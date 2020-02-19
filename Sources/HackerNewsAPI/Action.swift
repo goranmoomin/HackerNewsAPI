@@ -17,6 +17,34 @@ public struct Action: Equatable, Hashable {
     public var kind: Kind
     public var url: URL
 
+    // MARK: - Methods
+
+    public func inverse() -> Action {
+        let howValue: String
+        switch kind {
+        case .upvote, .downvote:
+            howValue = "un"
+        case .unvote:
+            howValue = "up"
+        case .undown:
+            howValue = "down"
+        }
+        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        urlComponents.queryItems?.removeAll(where: { $0.name == "how" })
+        urlComponents.queryItems?.append(URLQueryItem(name: "how", value: howValue))
+        let url = urlComponents.url!
+        switch kind {
+        case .upvote:
+            return .unvote(url)
+        case .downvote:
+            return .undown(url)
+        case .unvote:
+            return .upvote(url)
+        case .undown:
+            return .downvote(url)
+        }
+    }
+
     // MARK: - Comparing
 
     public func hash(into hasher: inout Hasher) {
