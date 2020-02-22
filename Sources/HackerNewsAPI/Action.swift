@@ -75,3 +75,45 @@ public struct Action: Equatable, Hashable {
         Action(kind: .undown, url: url)
     }
 }
+
+// MARK: - Comments
+
+extension Comment {
+
+    static var urlSession = HackerNewsAPI.urlSession
+    typealias APIError = HackerNewsAPI.APIError
+
+    public func execute(_ action: Action) -> Promise<Void> {
+        let url = action.url
+        let promise = firstly {
+            Self.urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.map { _ in
+            self.actions.remove(action)
+            self.actions.insert(action.inverse())
+        }
+        return promise
+    }
+}
+
+// MARK: - Stories
+
+extension Story {
+
+    static var urlSession = HackerNewsAPI.urlSession
+    typealias APIError = HackerNewsAPI.APIError
+
+    public func execute(_ action: Action) -> Promise<Void> {
+        let url = action.url
+        let promise = firstly {
+            Self.urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.map { _ in
+            self.actions.remove(action)
+            self.actions.insert(action.inverse())
+        }
+        return promise
+    }
+}
