@@ -83,7 +83,7 @@ extension Comment {
     static var urlSession = HackerNewsAPI.urlSession
     typealias APIError = HackerNewsAPI.APIError
 
-    func execute(_ action: Action) -> Promise<Comment> {
+    public func execute(_ action: Action) -> Promise<Comment> {
         let url = action.url
         let promise = firstly {
             Self.urlSession.dataTask(.promise, with: url).validate()
@@ -107,7 +107,7 @@ extension Story {
     static var urlSession = HackerNewsAPI.urlSession
     typealias APIError = HackerNewsAPI.APIError
 
-    func execute(_ action: Action) -> Promise<Story> {
+    public func execute(_ action: Action) -> Promise<Story> {
         let url = action.url
         let promise = firstly {
             Self.urlSession.dataTask(.promise, with: url).validate()
