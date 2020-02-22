@@ -1,7 +1,10 @@
 
 import Foundation
 
-public struct Job: Equatable, Hashable {
+public class Job {
+
+    // MARK: - Properties
+
     public var id: Int
     public var ageDescription: String
     public var title: String
@@ -9,4 +12,14 @@ public struct Job: Equatable, Hashable {
     public var url: URL?
     // but have text.
     public var text: String?
+
+    // MARK: - Init
+
+    init(id: Int, ageDescription: String, title: String, url: URL?, text: String?) {
+        self.id = id
+        self.ageDescription = ageDescription
+        self.title = title
+        self.url = url
+        self.text = text
+    }
 }

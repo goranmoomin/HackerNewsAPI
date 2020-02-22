@@ -167,9 +167,7 @@ class StoryParser {
             while commentsPerLevel.count - 1 > level {
                 let currentComments = try unwrap(commentsPerLevel.popLast(),
                                                  orThrow: ParserError.unknown)
-                let currentLevel = commentsPerLevel.count - 1
-                let commentsCount = commentsPerLevel[currentLevel].count
-                commentsPerLevel[currentLevel][commentsCount - 1].comments = currentComments
+                commentsPerLevel.last?.last?.comments = currentComments
             }
         }
         for commentEl in commentEls {

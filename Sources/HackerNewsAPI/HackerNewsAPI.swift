@@ -127,29 +127,6 @@ public struct HackerNewsAPI {
         return promise
     }
 
-    public static func user(withName name: String) -> Promise<User> {
-        let url = URL(string: "https://hacker-news.firebaseio.com/v0/user/\(name).json")!
-        struct UserContainer: Decodable {
-            var about: String?
-            var created: Date
-            var karma: Int
-        }
-        let promise = firstly {
-            urlSession.dataTask(.promise, with: url)
-        }.map { (data, _) -> User in
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .secondsSince1970
-            let user = try perform(decoder.decode(UserContainer.self, from: data)) { error in
-                APIError.decodingFailed(error)
-            }
-            let creation = user.created
-            let description = try perform(Entities.unescape(user.about ?? ""), orThrow: APIError.unknown)
-            let karma = user.karma
-            return User(creation: creation, description: description, name: name, karma: karma)
-        }
-        return promise
-    }
-
     public static func comment(on story: Story, as text: String) -> Promise<Void> {
         let id = story.id
         let url = URL(string: "https://news.ycombinator.com/comment?parent=\(id)")!

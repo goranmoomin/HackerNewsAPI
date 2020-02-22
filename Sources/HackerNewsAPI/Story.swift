@@ -1,7 +1,10 @@
 
 import Foundation
 
-public struct Story: Equatable, Hashable {
+public class Story {
+
+    // MARK: - Properties
+
     public var id: Int
     public var authorName: String
     public var ageDescription: String
@@ -16,4 +19,19 @@ public struct Story: Equatable, Hashable {
         comments.reduce(0, { $0 + $1.commentCount })
     }
     public var actions: Set<Action>
+
+    // MARK: - Init
+
+    init(id: Int, authorName: String, ageDescription: String, score: Int, title: String, url: URL?,
+         text: String?, comments: [Comment], actions: Set<Action>) {
+        self.id = id
+        self.authorName = authorName
+        self.ageDescription = ageDescription
+        self.score = score
+        self.title = title
+        self.url = url
+        self.text = text
+        self.comments = comments
+        self.actions = actions
+    }
 }
