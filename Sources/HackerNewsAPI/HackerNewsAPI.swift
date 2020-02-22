@@ -176,16 +176,4 @@ public struct HackerNewsAPI {
         }.asVoid()
         return promise
     }
-
-    public static func execute(_ action: Action) -> Promise<Action> {
-        let url = action.url
-        let promise = firstly {
-            urlSession.dataTask(.promise, with: url).validate()
-        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
-            throw APIError.networkingFailed(error)
-        }.map { _ -> Action in
-            action.inverse()
-        }
-        return promise
-    }
 }

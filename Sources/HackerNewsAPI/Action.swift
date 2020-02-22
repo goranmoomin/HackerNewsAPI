@@ -1,5 +1,7 @@
 
 import Foundation
+import PromiseKit
+import PMKFoundation
 
 public struct Action: Equatable, Hashable {
 
@@ -71,5 +73,53 @@ public struct Action: Equatable, Hashable {
 
     public static func undown(_ url: URL) -> Action {
         Action(kind: .undown, url: url)
+    }
+}
+
+// MARK: - Comments
+
+extension Comment {
+
+    static var urlSession = HackerNewsAPI.urlSession
+    typealias APIError = HackerNewsAPI.APIError
+
+    func execute(_ action: Action) -> Promise<Comment> {
+        let url = action.url
+        let promise = firstly {
+            Self.urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.map { _ -> Comment in
+            let inverseAction = action.inverse()
+            var comment = self
+            comment.actions.remove(action)
+            comment.actions.insert(inverseAction)
+            return comment
+        }
+        return promise
+    }
+}
+
+// MARK: - Stories
+
+extension Story {
+
+    static var urlSession = HackerNewsAPI.urlSession
+    typealias APIError = HackerNewsAPI.APIError
+
+    func execute(_ action: Action) -> Promise<Story> {
+        let url = action.url
+        let promise = firstly {
+            Self.urlSession.dataTask(.promise, with: url).validate()
+        }.recover { error -> Promise<(data: Data, response: URLResponse)> in
+            throw APIError.networkingFailed(error)
+        }.map { _ -> Story in
+            let inverseAction = action.inverse()
+            var story = self
+            story.actions.remove(action)
+            story.actions.insert(inverseAction)
+            return story
+        }
+        return promise
     }
 }
