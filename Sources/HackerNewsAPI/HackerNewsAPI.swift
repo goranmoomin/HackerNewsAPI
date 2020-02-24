@@ -127,8 +127,7 @@ public struct HackerNewsAPI {
         return promise
     }
 
-    public static func comment(on story: Story, as text: String) -> Promise<Void> {
-        let id = story.id
+    static func comment(onItemWithID id: Int, as text: String) -> Promise<Void> {
         let url = URL(string: "https://news.ycombinator.com/comment?parent=\(id)")!
         let promise = firstly {
             urlSession.dataTask(.promise, with: url).validate()
@@ -152,5 +151,18 @@ public struct HackerNewsAPI {
             return promise
         }.asVoid()
         return promise
+    }
+
+    public static func comment(on story: Story, as text: String) -> Promise<Void> {
+        guard story.isCommentable else {
+            return Promise(error: APIError.notCommentable)
+        }
+        let id = story.id
+        return comment(onItemWithID: id, as: text)
+    }
+
+    public static func comment(on comment: Comment, as text: String) -> Promise<Void> {
+        let id = comment.id
+        return HackerNewsAPI.comment(onItemWithID: id, as: text)
     }
 }

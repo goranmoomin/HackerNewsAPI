@@ -19,11 +19,12 @@ public class Story {
         comments.reduce(0, { $0 + $1.commentCount })
     }
     public var actions: Set<Action>
+    public var isCommentable: Bool
 
     // MARK: - Init
 
     init(id: Int, authorName: String, ageDescription: String, score: Int, title: String, url: URL?,
-         text: String?, comments: [Comment], actions: Set<Action>) {
+         text: String?, comments: [Comment], actions: Set<Action>, isCommentable: Bool) {
         self.id = id
         self.authorName = authorName
         self.ageDescription = ageDescription
@@ -33,5 +34,6 @@ public class Story {
         self.text = text
         self.comments = comments
         self.actions = actions
+        self.isCommentable = isCommentable
     }
 }

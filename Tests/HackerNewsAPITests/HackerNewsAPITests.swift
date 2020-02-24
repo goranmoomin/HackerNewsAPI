@@ -73,6 +73,7 @@ final class HackerNewsAPITests: XCTestCase {
             XCTAssertEqual(story.comments[0].comments.count, 2)
             XCTAssert(story.comments[0].text.hasPrefix("I find this layout"))
             XCTAssertEqual(story.comments[0].actions.map({ $0.kind }), [.upvote])
+            XCTAssertEqual(story.isCommentable, false)
         } catch {
             XCTFail("Error \(error) thrown.")
         }

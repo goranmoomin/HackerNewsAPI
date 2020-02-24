@@ -210,9 +210,10 @@ class StoryParser {
         let actions = try self.actions()
         let (url, text) = try content()
         let comments = try commentTree()
+        let isCommentable = try self.commentFormEl() != nil
         let story = Story(id: id, authorName: authorName, ageDescription: ageDescription,
                           score: score, title: title, url: url, text: text, comments: comments,
-                          actions: actions)
+                          actions: actions, isCommentable: isCommentable)
         return story
     }
 }
