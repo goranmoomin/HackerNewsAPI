@@ -106,7 +106,7 @@ class StoryParser {
 
     func actions() throws -> Set<Action> {
         let fatItemEl = try self.fatItemEl()
-        let voteAnchorEls = try unwrap(try! fatItemEl.select(".votelinks a:has(.votearrow)"),
+        let voteAnchorEls = try unwrap(try! fatItemEl.select(".votelinks a:has(.votearrow):not(.nosee)"),
                                        orThrow: ParserError.unknown)
         var actions: Set<Action> = []
         let base = URL(string: "https://news.ycombinator.com")

@@ -50,7 +50,7 @@ class CommentParser {
     }
 
     func actions() throws -> Set<Action> {
-        let voteAnchorEls = try! commentEl.select(".votelinks a:has(.votearrow)")
+        let voteAnchorEls = try! commentEl.select(".votelinks a:has(.votearrow):not(.nosee)")
         var actions: Set<Action> = []
         let base = URL(string: "https://news.ycombinator.com")
         for voteAnchorEl in voteAnchorEls {
