@@ -19,40 +19,54 @@ public struct HackerNewsAPI {
 
     // MARK: - Static Properties
 
-    static var urlSession = URLSession.shared
+    static var urlSession: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.httpShouldSetCookies = false
+        return URLSession(configuration: configuration)
+    }()
+
+    static var urlSessionWithoutRedirection: URLSession = {
+        class Delegate: NSObject, URLSessionTaskDelegate {
+            public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+                completionHandler(nil)
+            }
+        }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.httpShouldSetCookies = false
+        let delegate = Delegate()
+        return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+    }()
 
     // MARK: - Static Methods
 
-    public static func logout() {
-        guard let storage = urlSession.configuration.httpCookieStorage else {
-            return
-        }
-        storage.removeCookies(since: .distantPast)
-    }
-
-    public static func login(toAccount account: String, password: String) -> Promise<Void> {
-        logout()
+    public static func login(toAccount account: String, password: String) -> Promise<Token> {
         let url = URL(string: "https://news.ycombinator.com/login?acct=\(account)&pw=\(password)")!
         let promise = firstly {
-            urlSession.dataTask(.promise, with: url).validate()
+            urlSessionWithoutRedirection.dataTask(.promise, with: url)
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
-        }.map { (data, response) in
-            guard let storage = urlSession.configuration.httpCookieStorage else {
-                return
+        }.map { (data, response) -> Token in
+            let response = response as! HTTPURLResponse
+            guard let headerFields = response.allHeaderFields as? [String: String] else {
+                throw APIError.unknown
             }
-            let cookies = storage.cookies(for: url) ?? []
-            guard cookies.first(where: { $0.name == "user" }) != nil else {
+            let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
+            guard let userCookie = cookies.first(where: { $0.name == "user" }) else {
                 throw APIError.loginFailed
             }
+            return Token(cookie: userCookie)
         }
         return promise
     }
 
-    public static func items(from category: ItemListCategory) -> Promise<[ListableItem]> {
+    public static func items(from category: ItemListCategory, token: Token? = nil) -> Promise<[ListableItem]> {
         let url = URL(string: "https://news.ycombinator.com/\(category.rawValue)")!
+        var request = URLRequest(url: url)
+        if let token = token {
+            request.add(token)
+        }
         let promise = firstly {
-            urlSession.dataTask(.promise, with: url).validate()
+            urlSession.dataTask(.promise, with: request).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
         }.map { (data, response) -> [ListableItem] in
@@ -67,18 +81,22 @@ public struct HackerNewsAPI {
         return promise
     }
 
-    public static func topItems() -> Promise<[ListableItem]> {
-        items(from: .top)
+    public static func topItems(token: Token? = nil) -> Promise<[ListableItem]> {
+        items(from: .top, token: token)
     }
 
-    public static func newItems() -> Promise<[ListableItem]> {
-        items(from: .new)
+    public static func newItems(token: Token? = nil) -> Promise<[ListableItem]> {
+        items(from: .new, token: token)
     }
 
-    public static func story(withID id: Int) -> Promise<Story> {
+    public static func story(withID id: Int, token: Token? = nil) -> Promise<Story> {
         let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
+        var request = URLRequest(url: url)
+        if let token = token {
+            request.add(token)
+        }
         let promise = firstly {
-            urlSession.dataTask(.promise, with: url).validate()
+            urlSession.dataTask(.promise, with: request).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
         }.map { (data, response) -> Story in
@@ -93,11 +111,11 @@ public struct HackerNewsAPI {
         return promise
     }
 
-    public static func topLevelItem(from listableItem: ListableItem) -> Promise<TopLevelItem> {
+    public static func topLevelItem(from listableItem: ListableItem, token: Token? = nil) -> Promise<TopLevelItem> {
         let id = listableItem.id
         switch listableItem.kind {
         case .story:
-            return story(withID: id).map({ .story($0) })
+            return story(withID: id, token: token).map({ .story($0) })
         case .job:
             return job(withID: id).map({ .job($0) })
         case .poll:
@@ -105,10 +123,14 @@ public struct HackerNewsAPI {
         }
     }
 
-    public static func job(withID id: Int) -> Promise<Job> {
+    public static func job(withID id: Int, token: Token? = nil) -> Promise<Job> {
         let url = URL(string: "https://news.ycombinator.com/item?id=\(id)")!
+        var request = URLRequest(url: url)
+        if let token = token {
+            request.add(token)
+        }
         let promise = firstly {
-            urlSession.dataTask(.promise, with: url).validate()
+            urlSession.dataTask(.promise, with: request).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
         }.map { (data, response) -> Job in
@@ -127,10 +149,12 @@ public struct HackerNewsAPI {
         return promise
     }
 
-    static func comment(onItemWithID id: Int, as text: String) -> Promise<Void> {
+    static func comment(onItemWithID id: Int, as text: String, token: Token) -> Promise<Void> {
         let url = URL(string: "https://news.ycombinator.com/comment?parent=\(id)")!
+        var request = URLRequest(url: url)
+        request.add(token)
         let promise = firstly {
-            urlSession.dataTask(.promise, with: url).validate()
+            urlSession.dataTask(.promise, with: request).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
         }.then { (data, response) -> Promise<(data: Data, response: URLResponse)> in
@@ -147,22 +171,25 @@ public struct HackerNewsAPI {
                 URLQueryItem(name: "text", value: text)
             ]
             let url = urlComponents.url!
-            let promise = urlSession.dataTask(.promise, with: url).validate()
+            var request = URLRequest(url: url)
+            request.add(token)
+            // TODO: Check the site format and throw appropriate errors for rate limits, etc...
+            let promise = urlSessionWithoutRedirection.dataTask(.promise, with: request).validateRedirection()
             return promise
         }.asVoid()
         return promise
     }
 
-    public static func comment(on story: Story, as text: String) -> Promise<Void> {
+    public static func comment(on story: Story, as text: String, token: Token) -> Promise<Void> {
         guard story.isCommentable else {
             return Promise(error: APIError.notCommentable)
         }
         let id = story.id
-        return comment(onItemWithID: id, as: text)
+        return comment(onItemWithID: id, as: text, token: token)
     }
 
-    public static func comment(on comment: Comment, as text: String) -> Promise<Void> {
+    public static func comment(on comment: Comment, as text: String, token: Token) -> Promise<Void> {
         let id = comment.id
-        return HackerNewsAPI.comment(onItemWithID: id, as: text)
+        return HackerNewsAPI.comment(onItemWithID: id, as: text, token: token)
     }
 }

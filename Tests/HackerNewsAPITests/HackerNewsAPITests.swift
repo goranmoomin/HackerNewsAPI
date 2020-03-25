@@ -6,9 +6,8 @@ final class HackerNewsAPITests: XCTestCase {
 
     func testSuccessfulLogin() {
         do {
-            try hang(HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd"))
-            let story = try hang(HackerNewsAPI.story(withID: 22254596))
-            XCTAssertEqual(story.actions, [])
+            let token = try hang(HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd"))
+            XCTAssertEqual(token.cookie.name, "user")
         } catch {
             XCTFail("Error \(error) thrown.")
         }

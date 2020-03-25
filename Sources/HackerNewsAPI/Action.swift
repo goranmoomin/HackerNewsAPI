@@ -83,10 +83,12 @@ extension Comment {
     static var urlSession = HackerNewsAPI.urlSession
     typealias APIError = HackerNewsAPI.APIError
 
-    public func execute(_ action: Action) -> Promise<Void> {
+    public func execute(_ action: Action, token: Token) -> Promise<Void> {
         let url = action.url
+        var request = URLRequest(url: url)
+        request.add(token)
         let promise = firstly {
-            Self.urlSession.dataTask(.promise, with: url).validate()
+            Self.urlSession.dataTask(.promise, with: request).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
         }.map { _ in
@@ -104,10 +106,12 @@ extension Story {
     static var urlSession = HackerNewsAPI.urlSession
     typealias APIError = HackerNewsAPI.APIError
 
-    public func execute(_ action: Action) -> Promise<Void> {
+    public func execute(_ action: Action, token: Token) -> Promise<Void> {
         let url = action.url
+        var request = URLRequest(url: url)
+        request.add(token)
         let promise = firstly {
-            Self.urlSession.dataTask(.promise, with: url).validate()
+            Self.urlSession.dataTask(.promise, with: request).validate()
         }.recover { error -> Promise<(data: Data, response: URLResponse)> in
             throw APIError.networkingFailed(error)
         }.map { _ in
