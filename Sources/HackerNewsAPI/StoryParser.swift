@@ -113,6 +113,9 @@ class StoryParser {
         for voteAnchorEl in voteAnchorEls {
             let href = try perform(voteAnchorEl.attr("href"), orThrow: ParserError.unknown)
             let url = try unwrap(URL(string: href, relativeTo: base), orThrow: ParserError.unknown)
+            if url.components?.queryItems?.filter({ $0.name == "auth" }).isEmpty ?? true {
+                continue
+            }
             let voteArrowEl = try unwrap(try! voteAnchorEl.select(".votearrow").first(),
                                          orThrow: ParserError.unknown)
             let title = try perform(voteArrowEl.attr("title"), orThrow: ParserError.unknown)

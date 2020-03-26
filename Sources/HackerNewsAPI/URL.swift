@@ -6,3 +6,9 @@ extension URL {
         host != nil
     }
 }
+
+extension URL {
+    var components: URLComponents? {
+        URLComponents(url: self, resolvingAgainstBaseURL: true)
+    }
+}
