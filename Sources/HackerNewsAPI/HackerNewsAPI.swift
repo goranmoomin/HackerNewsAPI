@@ -141,9 +141,8 @@ public struct HackerNewsAPI {
             let parser = StoryParser(document: document)
             let ageDescription = try parser.ageDescription()
             let title = try parser.title()
-            let (url, text) = try parser.content()
-            let job = Job(id: id, ageDescription: ageDescription, title: title, url: url,
-                          text: text)
+            let content = try parser.content()
+            let job = Job(id: id, ageDescription: ageDescription, title: title, content: content)
             return job
         }
         return promise

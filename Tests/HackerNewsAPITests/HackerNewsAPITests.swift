@@ -59,12 +59,15 @@ final class HackerNewsAPITests: XCTestCase {
 
     func testLoadingURLStory() {
         do {
-            let story = try hang(HackerNewsAPI.story(withID: 21997622))
+            let token = try hang(HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd"))
+            let story = try hang(HackerNewsAPI.story(withID: 21997622, token: token))
             XCTAssertEqual(story.authorName, "pcr910303")
             XCTAssertEqual(story.id, 21997622)
             XCTAssertEqual(story.score, 115)
-            XCTAssertEqual(story.text, nil)
-            XCTAssertEqual(story.url, URL(string: "http://ijzerenhein.github.io/autolayout.js/"))
+            XCTAssertEqual(
+                story.content,
+                .url(URL(string: "http://ijzerenhein.github.io/autolayout.js/")!)
+            )
             XCTAssertEqual(story.title,
                            "Apple's auto layout and visual format language for JavaScript (2016)")
             XCTAssertEqual(story.commentCount, 29)
@@ -80,11 +83,12 @@ final class HackerNewsAPITests: XCTestCase {
 
     func testLoadingTextStory() {
         do {
-            let story = try hang(HackerNewsAPI.story(withID: 121003))
+            let token = try hang(HackerNewsAPI.login(toAccount: "hntestacc", password: "hntestpwd"))
+            let story = try hang(HackerNewsAPI.story(withID: 121003, token: token))
             XCTAssertEqual(story.authorName, "tel")
             XCTAssertEqual(story.id, 121003)
             XCTAssertEqual(story.score, 25)
-            XCTAssert(story.text?.hasPrefix("or HN: the Next Iteration") ?? false)
+            XCTAssert(story.content.text?.hasPrefix("or HN: the Next Iteration") ?? false)
             XCTAssertEqual(story.title, "Ask HN: The Arc Effect")
             XCTAssertEqual(story.actions.map({ $0.kind }), [.upvote])
         } catch {
@@ -97,8 +101,7 @@ final class HackerNewsAPITests: XCTestCase {
             let job = try hang(HackerNewsAPI.job(withID: 22188212))
             XCTAssertEqual(job.id, 22188212)
             XCTAssertEqual(job.title, "XIX (YC W17) Is Hiring Engineers in San Francisco")
-            XCTAssertEqual(job.url, URL(string: "https://jobs.lever.co/xix"))
-            XCTAssertEqual(job.text, nil)
+            XCTAssertEqual(job.content, .url(URL(string: "https://jobs.lever.co/xix")!))
         } catch {
             XCTFail("Error \(error) thrown.")
         }
@@ -110,8 +113,7 @@ final class HackerNewsAPITests: XCTestCase {
             XCTAssertEqual(job.id, 192327)
             XCTAssertEqual(job.ageDescription, "on May 16, 2008")
             XCTAssertEqual(job.title, "Justin.tv is looking for a Lead Flash Engineer!")
-            XCTAssertEqual(job.url, nil)
-            XCTAssert(job.text?.hasPrefix("Justin.tv is the biggest live") ?? false)
+            XCTAssert(job.content.text?.hasPrefix("Justin.tv is the biggest live") ?? false)
         } catch {
             XCTFail("Error \(error) thrown.")
         }

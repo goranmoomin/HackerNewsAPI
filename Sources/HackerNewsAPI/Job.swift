@@ -8,18 +8,22 @@ public class Job {
     public var id: Int
     public var ageDescription: String
     public var title: String
-    // Some jobs don't have a URL or an empty string
-    public var url: URL?
-    // but have text.
-    public var text: String?
+    public var content: Content
 
     // MARK: - Init
 
-    init(id: Int, ageDescription: String, title: String, url: URL?, text: String?) {
+    init(id: Int, ageDescription: String, title: String, content: Content) {
         self.id = id
         self.ageDescription = ageDescription
         self.title = title
-        self.url = url
-        self.text = text
+        self.content = content
+    }
+
+    convenience init(id: Int, ageDescription: String, title: String, url: URL) {
+        self.init(id: id, ageDescription: ageDescription, title: title, content: .url(url))
+    }
+
+    convenience init(id: Int, ageDescription: String, title: String, text: String) {
+        self.init(id: id, ageDescription: ageDescription, title: title, content: .text(text))
     }
 }

@@ -145,22 +145,20 @@ class StoryParser {
         return actions
     }
 
-    // FIXME: Use proper modeling with enums
-    func content() throws -> (URL?, String?) {
-        var url: URL?
-        var text: String?
+    func content() throws -> Content {
         let hasText = try self.hasText()
         let rowEls = try self.rowEls()
         if hasText {
             let textEl = try unwrap(rowEls[3].child(1), orThrow: ParserError.unknown)
-            text = try perform(textEl.text(), orThrow: ParserError.unknown)
+            let text = try perform(textEl.text(), orThrow: ParserError.unknown)
+            return .text(text)
         } else {
             let titleAnchorEl = try self.titleAnchorEl()
             let href = try perform(titleAnchorEl.attr("href"),
                                    orThrow: ParserError.unknown)
-            url = URL(string: href)
+            let url = try unwrap(URL(string: href), orThrow: ParserError.unknown)
+            return .url(url)
         }
-        return (url, text)
     }
 
     func commentTree() throws -> [Comment] {
@@ -211,11 +209,11 @@ class StoryParser {
         let score = try self.score()
         let title = try self.title()
         let actions = try self.actions()
-        let (url, text) = try content()
+        let content = try self.content()
         let comments = try commentTree()
         let isCommentable = try self.commentFormEl() != nil
         let story = Story(id: id, authorName: authorName, ageDescription: ageDescription,
-                          score: score, title: title, url: url, text: text, comments: comments,
+                          score: score, title: title, content: content, comments: comments,
                           actions: actions, isCommentable: isCommentable)
         return story
     }
